@@ -1,28 +1,64 @@
 print("Task 3 - Analysis started")
 
 import pandas as pd
+import numpy as np
 
 # load csv file
-file_path = "data/cleaned_trends.csv"
-
+file_path = "data/trends_clean.csv"
 df = pd.read_csv(file_path)
 
-print("CSV file read successfully")
+# -------- basic info --------
 
-# -------- analysis --------
+print("Data loaded:", df.shape)
 
-# 1. count of posts per category
-category_count = df["category"].value_counts()
-print("\nPosts per category:")
-print(category_count)
+print("\nFirst 5 rows:")
+print(df.head())
 
-# 2. average score per category
-avg_score = df.groupby("category")["score"].mean()
-print("\nAverage score per category:")
-print(avg_score)
+# average values
+avg_score = df["score"].mean()
+avg_comments = df["num_comments"].mean()
 
-# 3. top 5 posts by score
-top_posts = df.sort_values(by="score", ascending=False).head(5)
+print("\nAverage score:", avg_score)
+print("Average comments:", avg_comments)
 
-print("\nTop 5 posts:")
-print(top_posts[["title", "category", "score"]])
+# -------- numpy analysis --------
+
+print("\n--- NumPy Stats ---")
+
+scores = df["score"].values
+
+print("Mean score   :", np.mean(scores))
+print("Median score :", np.median(scores))
+print("Std deviation:", np.std(scores))
+
+print("Max score    :", np.max(scores))
+print("Min score    :", np.min(scores))
+
+# category with most stories
+top_category = df["category"].value_counts().idxmax()
+count = df["category"].value_counts().max()
+
+print("\nMost stories in:", top_category, "(", count, "stories )")
+
+# most commented story
+max_comments_row = df.loc[df["num_comments"].idxmax()]
+
+print("\nMost commented story:")
+print(max_comments_row["title"], "-", max_comments_row["num_comments"], "comments")
+
+# -------- new columns --------
+
+# engagement = comments per score
+df["engagement"] = df["num_comments"] / (df["score"] + 1)
+
+# is_popular = score > average
+df["is_popular"] = df["score"] > avg_score
+
+print("\nNew columns added")
+
+# -------- save file --------
+
+output_file = "data/trends_analysed.csv"
+df.to_csv(output_file, index=False)
+
+print("Saved to", output_file)
